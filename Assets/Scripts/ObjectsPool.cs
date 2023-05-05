@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ObjectsPool<T> : IEnumerable<T> where T : MonoBehaviour
+public class ObjectsPool<T> : IEnumerable<T> where T : Component
 {
     private LinkedList<T> pool;
 

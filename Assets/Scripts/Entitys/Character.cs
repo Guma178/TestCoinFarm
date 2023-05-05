@@ -62,7 +62,7 @@ namespace TCF.Entitys
             droppedTreasure = other.GetComponent<DroppedTreasure>();
             if (droppedTreasure != null)
             {
-                if (backpack.Put(droppedTreasure.Treasure))
+                if (backpack.Put(droppedTreasure.Treasure, droppedTreasure.ThisTransorm.position, new ProcessState()))
                 {
                     droppedTreasure.PickUp();
                 }
@@ -95,7 +95,7 @@ namespace TCF.Entitys
             treasure = backpack.Take();
             while (treasure != null) 
             {
-                storehouse.Put(treasure);
+                storehouse.Put(treasure, backpack.PilePeak, new ProcessState());
                 yield return new WaitForSeconds(0.25f);
                 treasure = backpack.Take();
             }

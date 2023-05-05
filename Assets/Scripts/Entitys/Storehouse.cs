@@ -15,7 +15,15 @@ namespace TCF.Entitys
 
         private int currentPileInd = 0, wealth = 0;
 
-        public int Wealth => wealth;
+        public int Wealth
+        {
+            get { return wealth; }
+            private set 
+            { 
+                wealth = value;
+                WealthChanged?.Invoke(wealth);
+            }
+        }
 
         public event System.Action<int> WealthChanged;
 
@@ -29,8 +37,21 @@ namespace TCF.Entitys
             if (stockpiles[currentPileInd].Volume + treasure.Volume < stockpileCapacity)
             {
                 stockpiles[currentPileInd].Push(treasure);
-                wealth += treasure.Wealth;
-                WealthChanged?.Invoke(wealth);
+                Wealth += treasure.Wealth;
+            }
+        }
+
+        public void Put(Treasure treasure, Vector3 from, ProcessState proc)
+        {
+            if (currentPileInd + 1 < stockpiles.Count &&
+                stockpiles[currentPileInd].Volume + treasure.Volume > stockpileCapacity)
+            {
+                currentPileInd++;
+            }
+            if (stockpiles[currentPileInd].Volume + treasure.Volume <= stockpileCapacity)
+            {
+                proc.Completed += delegate () { Wealth += treasure.Wealth; };
+                stockpiles[currentPileInd].Push(treasure, from, proc);
             }
         }
     }

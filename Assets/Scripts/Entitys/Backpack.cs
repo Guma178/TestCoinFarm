@@ -24,11 +24,27 @@ namespace TCF.Entitys
             }
         }
 
+        public Vector3 PilePeak { get { return Pile.PeakPosition; } } 
+            
+
         public bool Put(Treasure treasure)
         {
             if (Pile.Volume + treasure.Volume <= capacity)
             {
                 Pile.Push(treasure);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool Put(Treasure treasure, Vector3 from, ProcessState proc)
+        {
+            if (Pile.Volume + treasure.Volume <= capacity)
+            {
+                Pile.Push(treasure, from, proc);
                 return true;
             }
             else

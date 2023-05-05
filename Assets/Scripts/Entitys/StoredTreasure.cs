@@ -7,6 +7,25 @@ namespace TCF.Entitys
 {
     public class StoredTreasure : ViewTreasure
     {
+
+        private float? height;
+        public float Height
+        {
+            get 
+            {
+                if (height == null)
+                {
+                    Quaternion rotation = ThisTransorm.rotation;
+                    ThisTransorm.rotation = Quaternion.LookRotation(Vector3.up, Vector3.up);
+                    height = Vector3.Project(Renderer.bounds.size, Vector3.up).magnitude;
+                    ThisTransorm.rotation = rotation;
+                }
+
+                return height.Value;
+            }
+        }
+
+        private Vector3 size;
         public Vector3 Size
         {
             get
@@ -28,6 +47,7 @@ namespace TCF.Entitys
                 return thisTransorm;
             }
         }
+
 
         private System.Tuple<bool, Renderer> thisRenderer = System.Tuple.Create<bool, Renderer>(false, null);
         private Renderer Renderer
