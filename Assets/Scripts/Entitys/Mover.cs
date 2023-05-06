@@ -102,15 +102,8 @@ namespace TCF.Entitys
         {
             if (Movablebody != null)
             {
-                if (Movablebody.isKinematic)
-                {
-                    Movablebody.MovePosition(position);
-                    Movablebody.rotation = rotation;
-                }
-                else
-                {
-                    throw new NotImplementedException();
-                }
+                Movablebody.MovePosition(position);
+                Movablebody.rotation = rotation;
             }
             else
             {
@@ -152,14 +145,12 @@ namespace TCF.Entitys
             
         private IEnumerator MovingTo(Transform target, ProcessState processState, float distance = 0, bool targetRotation = false)
         {
-            float approach;
             Vector3 toTarget;
 
             processState.Finished += delegate () { Movable = true;  };
             Movable = false;
-            approach = distance + Vector3.Project(Renderer.bounds.size, ThisTransorm.forward).magnitude;
             toTarget = (target.position - ThisTransorm.position);
-            while (toTarget.magnitude > approach)
+            while (toTarget.magnitude > (distance) + MoveSpeed * Time.deltaTime * 2)
             {
                 toTarget = (target.position - ThisTransorm.position);
                 Toward(toTarget.normalized);
@@ -174,6 +165,11 @@ namespace TCF.Entitys
                     yield return new WaitForEndOfFrame();
                     angle = Quaternion.Angle(ThisTransorm.rotation, target.rotation);
                 }
+                SetPosition(target.position, target.rotation);
+            }
+            else
+            {
+                SetPosition(target.position, ThisTransorm.rotation);
             }
             Movable = true;
             processState?.Complet();
@@ -181,18 +177,17 @@ namespace TCF.Entitys
         private IEnumerator MovingTo(Vector3 target, ProcessState processState)
         {
             Vector3 toTarget;
-            float approach;
 
             processState.Finished += delegate () { Movable = true; };
             Movable = false;
             toTarget = (target - ThisTransorm.position);
-            approach = Vector3.Project(Renderer.bounds.size, ThisTransorm.forward).magnitude;
-            while (toTarget.magnitude > approach)
+            while (toTarget.magnitude > MoveSpeed * Time.deltaTime * 2)
             {
                 toTarget = (target - ThisTransorm.position);
                 Toward(toTarget);
                 yield return new WaitForEndOfFrame();
             }
+            SetPosition(target, ThisTransorm.rotation);
             Movable = true;
             processState?.Complet();
         }
