@@ -5,13 +5,21 @@ using UnityEngine;
 
 namespace TCF.Entitys
 {
-    public class StoredTreasure : ViewTreasure
+    public class StoredTreasure : ViewTreasure, IPileable
     {
-        public Vector3 Size
+
+        private float? height;
+        public float Height
         {
-            get
+            get 
             {
-                return Renderer.bounds.size;
+                if (height == null)
+                {
+                    //height = Vector3.Project(ThisTransorm.TransformPoint(MeshFilter.sharedMesh.bounds.max) - ThisTransorm.TransformPoint(MeshFilter.sharedMesh.bounds.min), ThisTransorm.forward).magnitude;
+                    height = Vector3.Project(ThisTransorm.TransformVector(MeshFilter.sharedMesh.bounds.size), ThisTransorm.forward).magnitude;
+                }
+
+                return height.Value;
             }
         }
 
@@ -26,6 +34,21 @@ namespace TCF.Entitys
                 }
 
                 return thisTransorm;
+            }
+        }
+
+
+        private System.Tuple<bool, MeshFilter> thisMeshFilter = System.Tuple.Create<bool, MeshFilter>(false, null);
+        private MeshFilter MeshFilter
+        {
+            get
+            {
+                if (!thisMeshFilter.Item1)
+                {
+                    thisMeshFilter = System.Tuple.Create<bool, MeshFilter>(true, this.GetComponent<MeshFilter>());
+                }
+
+                return thisMeshFilter.Item2;
             }
         }
 
@@ -55,6 +78,19 @@ namespace TCF.Entitys
 
                 return mover.Item2;
             }
+        }
+
+        private void OnDrawGizmos()
+        {
+            //var bounds =  MeshFilter.mesh.bounds;
+            //Gizmos.matrix = transform.localToWorldMatrix;
+            //Gizmos.color = Color.blue;
+            //Gizmos.DrawWireCube(bounds.center, bounds.extents * 2);
+
+            Gizmos.color = Color.blue;
+            Gizmos.DrawLine(ThisTransorm.TransformPoint(MeshFilter.sharedMesh.bounds.min), ThisTransorm.TransformPoint(MeshFilter.sharedMesh.bounds.max));
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(ThisTransorm.position, ThisTransorm.position + ThisTransorm.forward);
         }
     }
 }

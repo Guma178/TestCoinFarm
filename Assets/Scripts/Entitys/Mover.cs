@@ -116,7 +116,7 @@ namespace TCF.Entitys
                 ThisTransorm.rotation = Quaternion.Lerp(ThisTransorm.rotation, rot, Time.deltaTime * RotationSpeed);
             }
         }
-        private void SetPosition(Vector3 position, Quaternion rotation)
+        public void SetPosition(Vector3 position, Quaternion rotation)
         {
             if (Movablebody != null)
             {

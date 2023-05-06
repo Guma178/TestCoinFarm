@@ -10,13 +10,21 @@ namespace TCF.Entitys
     public class Stockpile : MonoBehaviour
     {
         [SerializeField]
-        float spacing;
+        Pile pile;
 
         [SerializeField]
         private List<TreasureViewPool<StoredTreasure>> treasurePools;
 
         private int volume;
         public int Volume { get { return volume; } }
+
+        public Vector3 PeakPointer
+        {
+            get
+            {
+                return pile.PeakPosition;
+            }
+        }
 
         private Transform thisTransorm;
         private Transform ThisTransorm
@@ -31,14 +39,7 @@ namespace TCF.Entitys
                 return thisTransorm;
             }
         }
-        private Vector3 spacePointer;
-        private LinkedList<StockedTreasure> stored = new LinkedList<StockedTreasure>();
-
-
-        private void Start()
-        {
-            spacePointer = Vector3.zero;
-        }
+        private LinkedList<StoredTreasure> stored = new LinkedList<StoredTreasure>();
 
         public void Push(Treasure treasure)
         {
@@ -55,26 +56,31 @@ namespace TCF.Entitys
                 storedTreasure = Instantiate(pool.Prefab, ThisTransorm);
             }
             storedTreasure.gameObject.SetActive(true);
-            storedTreasure.ThisTransorm.position = ThisTransorm.position + ThisTransorm.TransformDirection(spacePointer);
-            spacePointer = spacePointer + (new Vector3(0, spacing + pool.Prefab.Size.y, 0));
-            stored.AddFirst(new StockedTreasure { Stored = storedTreasure, Treasure = treasure });
+            pile.Put(storedTreasure);
+            stored.AddFirst(storedTreasure);
         }
 
         public Treasure Pop()
         {
+            StoredTreasure storedTreasure;
             Treasure treasure;
             TreasureViewPool<StoredTreasure> pool;
+            LinkedListNode<StoredTreasure> storedHere;
 
             if (stored.First != null)
             {
                 pool = treasurePools.First(tp => tp.Treasure == stored.First.Value.Treasure);
 
-                treasure = stored.First.Value.Treasure;
+                treasure = pool.Treasure;
                 volume -= treasure.Volume;
-                spacePointer = spacePointer - (new Vector3(0, spacing + pool.Prefab.Size.y, 0));
-                stored.First.Value.Stored.gameObject.SetActive(false);
-                pool.Poool.Push(stored.First.Value.Stored);
-                stored.RemoveFirst();
+                storedTreasure = pile.Take<StoredTreasure>();
+                storedHere = stored.Find(storedTreasure);
+                if (storedHere != null)
+                {
+                    pool.Poool.Push(storedTreasure);
+                    stored.Remove(storedTreasure);
+                    storedTreasure.gameObject.SetActive(false);
+                }
 
                 return treasure;
             }
@@ -82,12 +88,6 @@ namespace TCF.Entitys
             {
                 return null;
             }
-        }
-
-        private class StockedTreasure
-        {
-            public Treasure Treasure { get; set; }
-            public StoredTreasure Stored { get; set; }
         }
     }
 }

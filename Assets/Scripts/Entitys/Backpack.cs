@@ -24,6 +24,9 @@ namespace TCF.Entitys
             }
         }
 
+        public Vector3 PilePeak { get { return Pile.PeakPointer; } } 
+            
+
         public bool Put(Treasure treasure)
         {
             if (Pile.Volume + treasure.Volume <= capacity)
