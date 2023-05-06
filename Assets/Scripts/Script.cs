@@ -25,7 +25,7 @@ public class Script : MonoBehaviour
     {
         if (UnityEngine.Input.GetKeyDown(KeyCode.M))
         {
-            backpack.Put(treasure);
+            backpack.Put(treasure, start.position, new TCF.ProcessState());
         }
     }
 }

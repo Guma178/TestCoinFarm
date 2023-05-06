@@ -36,6 +36,19 @@ namespace TCF.Entitys
             }
         }
 
+        private System.Tuple<bool, Renderer> bodyrenderer = System.Tuple.Create<bool, Renderer>(false, null);
+        private Renderer Renderer
+        {
+            get
+            {
+                if (!bodyrenderer.Item1)
+                {
+                    bodyrenderer = System.Tuple.Create<bool, Renderer>(true, this.GetComponent<Renderer>());
+                }
+
+                return bodyrenderer.Item2;
+            }
+        }
         private System.Tuple<bool, CharacterController> characterController = System.Tuple.Create<bool, CharacterController>(false, null);
         private CharacterController CharacterController
         {
@@ -85,6 +98,19 @@ namespace TCF.Entitys
                 Toward(direction);
             }
         }
+        public void SetPosition(Vector3 position, Quaternion rotation)
+        {
+            if (Movablebody != null)
+            {
+                Movablebody.MovePosition(position);
+                Movablebody.rotation = rotation;
+            }
+            else
+            {
+                ThisTransorm.position = position;
+                ThisTransorm.rotation = rotation;
+            }
+        }
 
         private void Toward(Vector3 direction)
         {
@@ -95,15 +121,15 @@ namespace TCF.Entitys
             Vector3 translation = ThisTransorm.forward * acceleration * MoveSpeed * Time.deltaTime;
             if (CharacterController != null)
             {
-                CharacterController.Move(translation);
                 ThisTransorm.rotation = Quaternion.Lerp(ThisTransorm.rotation, rot, Time.deltaTime * RotationSpeed);
+                CharacterController.Move(translation);
             }
             else if (Movablebody != null)
             {
                 if (Movablebody.isKinematic)
                 {
-                    Movablebody.MovePosition(Movablebody.position + translation);
                     Movablebody.rotation = Quaternion.Lerp(ThisTransorm.rotation, rot, Time.deltaTime * RotationSpeed);
+                    Movablebody.MovePosition(Movablebody.position + translation);
                 }
                 else
                 {
@@ -112,52 +138,39 @@ namespace TCF.Entitys
             }
             else
             {
-                ThisTransorm.Translate(translation);
                 ThisTransorm.rotation = Quaternion.Lerp(ThisTransorm.rotation, rot, Time.deltaTime * RotationSpeed);
-            }
-        }
-        public void SetPosition(Vector3 position, Quaternion rotation)
-        {
-            if (Movablebody != null)
-            {
-                if (Movablebody.isKinematic)
-                {
-                    Movablebody.MovePosition(position);
-                    Movablebody.rotation = rotation;
-                }
-                else
-                {
-                    throw new NotImplementedException();
-                }
-            }
-            else
-            {
-                ThisTransorm.position = position;
-                ThisTransorm.rotation = rotation;
+                ThisTransorm.Translate(translation, Space.World);
             }
         }
             
-        private IEnumerator MovingTo(Transform target, ProcessState processState)
+        private IEnumerator MovingTo(Transform target, ProcessState processState, float distance = 0, bool targetRotation = false)
         {
             Vector3 toTarget;
 
             processState.Finished += delegate () { Movable = true;  };
             Movable = false;
             toTarget = (target.position - ThisTransorm.position);
-            while (toTarget.magnitude > 0.05f)
+            while (toTarget.magnitude > (distance) + MoveSpeed * Time.deltaTime * 2)
             {
                 toTarget = (target.position - ThisTransorm.position);
                 Toward(toTarget.normalized);
                 yield return new WaitForEndOfFrame();
             }
-            float angle = Quaternion.Angle(ThisTransorm.rotation, target.rotation);
-            while (angle > 3)
+            if (targetRotation)
             {
-                ThisTransorm.rotation = Quaternion.Lerp(ThisTransorm.rotation, target.rotation, Time.deltaTime * RotationSpeed);
-                yield return new WaitForEndOfFrame();
-                angle = Quaternion.Angle(ThisTransorm.rotation, target.rotation);
+                float angle = Quaternion.Angle(ThisTransorm.rotation, target.rotation);
+                while (angle > 3)
+                {
+                    ThisTransorm.rotation = Quaternion.Lerp(ThisTransorm.rotation, target.rotation, Time.deltaTime * RotationSpeed);
+                    yield return new WaitForEndOfFrame();
+                    angle = Quaternion.Angle(ThisTransorm.rotation, target.rotation);
+                }
+                SetPosition(target.position, target.rotation);
             }
-            SetPosition(target.position, target.rotation);
+            else
+            {
+                SetPosition(target.position, ThisTransorm.rotation);
+            }
             Movable = true;
             processState?.Complet();
         }
@@ -168,10 +181,10 @@ namespace TCF.Entitys
             processState.Finished += delegate () { Movable = true; };
             Movable = false;
             toTarget = (target - ThisTransorm.position);
-            while (toTarget.magnitude > 0.05f)
+            while (toTarget.magnitude > MoveSpeed * Time.deltaTime * 2)
             {
                 toTarget = (target - ThisTransorm.position);
-                SetPosition(Vector3.Lerp(ThisTransorm.position, target, Time.deltaTime * MoveSpeed), ThisTransorm.rotation);
+                Toward(toTarget);
                 yield return new WaitForEndOfFrame();
             }
             SetPosition(target, ThisTransorm.rotation);

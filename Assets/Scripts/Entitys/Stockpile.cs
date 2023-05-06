@@ -60,6 +60,39 @@ namespace TCF.Entitys
             stored.AddFirst(storedTreasure);
         }
 
+        public void Push(Treasure treasure, Vector3 from, ProcessState process)
+        {
+            StoredTreasure storedTreasure;
+            Transform currentPeak;
+            TreasureViewPool<StoredTreasure> pool;
+
+            volume += treasure.Volume;
+
+            pool = treasurePools.First(tp => tp.Treasure == treasure);
+
+            storedTreasure = pool.Poool.Pop();
+            if (storedTreasure == null)
+            {
+                storedTreasure = Instantiate(pool.Prefab);
+            }
+
+            storedTreasure.gameObject.SetActive(true);
+            storedTreasure.ThisTransorm.parent = null;
+            storedTreasure.ThisTransorm.position = from;
+            currentPeak = pile.TakePeak();
+            process.Completed += delegate () 
+            {
+                storedTreasure.ThisTransorm.parent = ThisTransorm;
+                pile.Put(storedTreasure);
+            };
+            process.Finished += delegate ()
+            {
+                pile.BackPeak(currentPeak);
+            };
+            storedTreasure.Mover.MoveTo(currentPeak, process);
+            stored.AddFirst(storedTreasure);
+        }
+
         public Treasure Pop()
         {
             StoredTreasure storedTreasure;

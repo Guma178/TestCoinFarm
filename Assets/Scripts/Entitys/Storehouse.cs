@@ -40,5 +40,19 @@ namespace TCF.Entitys
                 Wealth += treasure.Wealth;
             }
         }
+
+        public void Put(Treasure treasure, Vector3 from, ProcessState proc)
+        {
+            if (currentPileInd + 1 < stockpiles.Count &&
+                stockpiles[currentPileInd].Volume + treasure.Volume > stockpileCapacity)
+            {
+                currentPileInd++;
+            }
+            if (stockpiles[currentPileInd].Volume + treasure.Volume <= stockpileCapacity)
+            {
+                proc.Completed += delegate () { Wealth += treasure.Wealth; };
+                stockpiles[currentPileInd].Push(treasure, from, proc);
+            }
+        }
     }
 }

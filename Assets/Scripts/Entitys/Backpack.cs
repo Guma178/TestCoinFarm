@@ -40,6 +40,19 @@ namespace TCF.Entitys
             }
         }
 
+        public bool Put(Treasure treasure, Vector3 from, ProcessState proc)
+        {
+            if (Pile.Volume + treasure.Volume <= capacity)
+            {
+                Pile.Push(treasure, from, proc);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public Treasure Take()
         {
             return Pile.Pop();
